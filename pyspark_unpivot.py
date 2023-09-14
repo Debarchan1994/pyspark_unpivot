@@ -9,31 +9,27 @@ def dataframe(parent_dataframe):
     df = parent_dataframe
 
 
-    ##################################################################################################
     # Define the labels for the bins
-    ##################
+    
 
     x_cat = ['class1', 'class2', 'class3']
 
     x_label_array = F.array(*(F.lit(label) for label in x_cat))
 
-    ##################################################################################################
-    # Get the relevant meta data
-    ##################
+    
     df_meta = df
 
     
-    ##################################################################################################
-    # Unpivot the dataframe
-    ##################
+    ########Unpivot the data frame
+   
 
-    # Define the stack function to unpivot the table                    
+    # Define the stack function to unpivot the table. The number changes according to the number of columns you want to stack                   
     unpivotExpr = "stack(3, '1', column_1, \
                             '2', column_2, \
                             '3', column_3, \
                             ) as (Operating_Point, value_)"
 
-    df_unpivot = df.select("c_van17", F.expr(unpivotExpr))
+    df_unpivot = df.select("put_here_a_unique_column", F.expr(unpivotExpr))
 
     df_unpivot = df_unpivot \
                                 .withColumn('class', F.col('Operating_Point').cast(IntegerType())) \
@@ -42,12 +38,14 @@ def dataframe(parent_dataframe):
 
 
     
-    ##################################################################################################
     # Merge the dataframe and aggregate the data
-    ##################
+   
 
     df_merge = df_meta.join(df_unpivot, 'common_unique_column_between_2_tables', 'inner')
 
+    
+    ## use aggregation if required
+    
     df_agg = df_merge \
                         .groupBy('column_x', 'column_y', 'column_z') \
                         .agg(F.round(F.sum('value_new'), 3).alias('summed_value_new'),
